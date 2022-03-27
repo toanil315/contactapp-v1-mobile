@@ -1,5 +1,8 @@
 package com.example.contactapp;
 
+import android.content.Intent;
+import android.graphics.BitmapFactory;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -36,7 +39,24 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ViewHold
 
     @Override
     public void onBindViewHolder(@NonNull ContactAdapter.ViewHolder holder, int position) {
+        byte[] byteImage = contacts.get(position).getImage();
         holder.tvName.setText(contacts.get(position).getName());
+        holder.ivAvatar.setImageBitmap(BitmapFactory.decodeByteArray(byteImage, 0, byteImage.length));
+
+        holder.setItemClickListener(new ItemClickListener() {
+            @Override
+            public void onClick(View view, int position, boolean isLongClick) {
+                if(isLongClick) {
+
+                }
+                else {
+                    Log.d("DEBUG1", "click item: " + Integer.toString(contacts.get(position).getId()));
+                    Intent intentDetail = new Intent(view.getContext(), DetailActivity.class);
+                    intentDetail.putExtra("idContact", Integer.toString(contacts.get(position).getId()));
+                    view.getContext().startActivity(intentDetail);
+                }
+            }
+        });
     }
 
     @Override
@@ -44,50 +64,36 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ViewHold
         return contacts.size();
     }
 
-    public static class ViewHolder extends RecyclerView.ViewHolder {
+    public static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener,View.OnLongClickListener {
         public TextView tvName;
         public ImageView ivAvatar;
+        private ItemClickListener itemClickListener;
 
         public ViewHolder(View view) {
             super(view);
 
             tvName = view.findViewById(R.id.tv_name);
             ivAvatar = view.findViewById(R.id.iv_avatar);
+
+            view.setOnClickListener(this); // set event OnClick for view
+            view.setOnLongClickListener(this); //set event OnLongClick for view
+        }
+
+        public void setItemClickListener(ItemClickListener itemClickListener)
+        {
+            this.itemClickListener = itemClickListener;
+        }
+
+        @Override
+        public void onClick(View v) {
+            itemClickListener.onClick(v,getAdapterPosition(),false);
+        }
+
+        @Override
+        public boolean onLongClick(View v) {
+            itemClickListener.onClick(v,getAdapterPosition(),true);
+            return true;
         }
     }
-//    @Override
-//    public Filter getFilter() {
-//        return new Filter() {
-//            @Override
-//            protected FilterResults performFiltering(CharSequence constraint) {
-//                List<Contact> filterContacts = new ArrayList<>();
-//                if(constraint.toString().isEmpty()){
-//                    System.out.println("run");
-//                    filterContacts.addAll(contactsAll);
-//
-//                }else{
-//                    System.out.println("here");
-//                    for(Contact record : contactsAll) {
-//                        // name match condition. this might differ depending on your requirement
-//                        // here we are looking for name or phone number match
-//                        if (record.getName().toLowerCase().contains(constraint.toString().toLowerCase())) {
-//                            filterContacts.add(record);
-//                        }
-//                    }
-//                }
-//                FilterResults filterResults = new FilterResults();
-//                filterResults.values = filterContacts;
-//                return filterResults;
-//            }
-//
-//            @Override
-//            protected void publishResults(CharSequence constraint, FilterResults results) {
-//                contacts.clear();
-//                contacts.addAll((Collection<? extends Contact>) results.values);
-//                notifyDataSetChanged();
-//            }
-//        };
-//    }
-
 
 }
